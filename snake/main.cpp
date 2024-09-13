@@ -5,8 +5,6 @@
 
 // TODO: 
 
-
-// implement snake moving around 
 // snake eating apple
 
 // apple respawning in random location
@@ -20,29 +18,102 @@
 
 // add start screen -> game -> freeze when die -> click -> start screen but different text   
 
+class Node {
+public: 
+    std::pair<int, int> position;
+    Node* next; 
+    Node* prev;
+
+    Node(int x, int y) {
+        position.first = x;
+        position.second = y;
+        next = nullptr; 
+        prev = nullptr;
+    }
+};
+
+class SnakeList {
+public: 
+    Node* head;
+    Node* tail; 
+
+    SnakeList() {        
+        Node* temp = new Node(2, 4); 
+        Node* temp2 = new Node(3, 4); 
+        head = temp; 
+
+        tail = temp2; 
+        
+        head->next = tail; 
+        tail->prev = head;
+    }
+};
 
 class Grid {
 public:
+    SnakeList snake; 
     std::string arr[9][9];
+    std::string direction; 
+    std::pair <int, int> changeDir; 
 
     Grid() {
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
-                arr[i][j] = "empty"; 
+                arr[j][i] = "empty"; 
             }
         }
 
-        arr[2][4] = "snake"; 
         arr[6][4] = "apple";
+
+        changeDir.first = 0;
+        changeDir.second = 0; 
     }
 
+    void updateSnake() {
+        // clears all snake elements
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                if (arr[j][i] == "snake") {
+                    arr[j][i] = "empty";
+                }
+            }
+        }
+
+        // moves the tail in front of the head, then sets new head
+
+        int newHeadX = snake.head->position.first + changeDir.first;
+        int newHeadY = snake.head->position.second + changeDir.second;
+
+        snake.tail->position.first = newHeadX;
+        snake.tail->position.second = newHeadY;
+
+        Node* temp = snake.tail->prev;
+        snake.head = snake.tail; 
+        if (snake.tail->prev != nullptr) {
+            std::cout << "biag"; 
+            snake.tail = temp;
+        }
+
+        // copies the current list of coordinates of the snake onto arr
+        Node* cur = snake.head;
+        while (cur != nullptr) {
+            int x = cur->position.first;
+            int y = cur->position.second;
+
+            arr[x][y] = "snake";
+
+            cur = cur->next;
+        }
+    }
 
     void drawGrid(sf::RenderWindow& window) {
 
+        // initalzing box size 
         sf::Vector2u size = window.getSize();
         unsigned int sideLen = size.x;
         float boxLen = sideLen / 9.0f; 
 
+        // drawing the entire grid 
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
                 sf::RectangleShape square(sf::Vector2f(boxLen, boxLen)); 
@@ -60,53 +131,68 @@ public:
                 }
 
                 window.draw(square);
-
             }
         }
     }
 
-    void moveSnake(sf::RenderWindow& window) {
-
+    void moveSnake(sf::Keyboard::Key input) {
+        Node* cur = snake.head; 
+        
+        if (input == sf::Keyboard::W) {
+            changeDir.first = 0;
+            changeDir.second = -1;
+        }
+        else if (input == sf::Keyboard::A) {
+            changeDir.first = -1;
+            changeDir.second = 0;
+        }
+        else if (input == sf::Keyboard::S) {
+            changeDir.first = 0;
+            changeDir.second = 1;
+        }
+        else if (input == sf::Keyboard::D) {
+            changeDir.first = 1;
+            changeDir.second = 0;
+        }
     }
 }; 
 
-
 int main() {
     sf::RenderWindow window(sf::VideoMode(900, 900), "snake");
-    window.setFramerateLimit(10); 
 
     Grid grid; 
+    sf::Clock clock;
+    sf::Keyboard::Key direction = sf::Keyboard::Unknown;
 
     while (window.isOpen()) {
         window.clear();
 
-
+        sf::Time time = clock.getElapsedTime();
 
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-                std::cout << "W"; 
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-                std::cout << "A";
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-                std::cout << "S";
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-                std::cout << "D";
-            }
+            if (event.type == sf::Event::KeyPressed) {
+                if (event.key.code == sf::Keyboard::W ||
+                    event.key.code == sf::Keyboard::A ||
+                    event.key.code == sf::Keyboard::S ||
+                    event.key.code == sf::Keyboard::D) {
 
+                    direction = event.key.code;
+
+                    grid.moveSnake(direction);
+                }
+            }
         }
 
+        if (time.asSeconds() > .18f) {
+            clock.restart();
+            grid.updateSnake(); 
+        }
 
-        // when key pressed change direction
-
-        grid.drawGrid(window); 
-        window.display(); 
+        grid.drawGrid(window);
+        window.display();
     }
-   
 }
