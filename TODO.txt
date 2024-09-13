@@ -1,0 +1,32 @@
+snake eating apple code:  (put inside updateSnake) 
+// note: these can prolly be turned into one if statement with cleaner code
+
+- IF head == apple 
+- IF one in length (head == tail) 
+  - newTail = head->position.first
+  - newTail = head->position.second
+
+  - move head forward
+
+  - newTail->next = head
+  - head->prev = newTail
+  - tail = newTail 
+
+- IF more than one in length
+  - snake's head should not change, instead add one at the tail
+  - copy and allocate space for tail, name it newTail 
+
+  - newTail = tail->position.first
+  - newTail = tail->position.second
+  - newTail.prev = tail.prev
+  - tail->next->prev = newTail
+
+  - move the tail in front of head 
+
+  - head->next = tail
+  - tail->prev = head
+  - tail->next = nullptr
+
+  - update head and tail
+  - head = tail
+  - tail = newTail 
