@@ -35,4 +35,8 @@ snake eating apple code:  (put inside updateSnake)
 checks for death:
 - out of bounds
 - snake head = anything else in the snake's body
+- switch screen after click
 
+
+start screen
+- when clicked, switch to snake screen 
