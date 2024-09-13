@@ -39,13 +39,8 @@ public:
 
     SnakeList() {        
         Node* temp = new Node(2, 4); 
-        Node* temp2 = new Node(3, 4); 
         head = temp; 
-
-        tail = temp2; 
-        
-        head->next = tail; 
-        tail->prev = head;
+        tail = temp; 
     }
 };
 
@@ -79,19 +74,35 @@ public:
             }
         }
 
-        // moves the tail in front of the head, then sets new head
-
+        // calculates snake's new head location
         int newHeadX = snake.head->position.first + changeDir.first;
         int newHeadY = snake.head->position.second + changeDir.second;
 
-        snake.tail->position.first = newHeadX;
-        snake.tail->position.second = newHeadY;
+        // if single node
+        if (snake.head == snake.tail) {
+            snake.head->position.first = newHeadX; 
+            snake.head->position.second = newHeadY; 
+        } else { // if more than one node
+            // moves snake's tail in front of snake's head
+            snake.tail->position.first = newHeadX;
+            snake.tail->position.second = newHeadY;
 
-        Node* temp = snake.tail->prev;
-        snake.head = snake.tail; 
-        if (snake.tail->prev != nullptr) {
-            std::cout << "biag"; 
-            snake.tail = temp;
+            // sets new tail
+            Node* newTail = snake.tail->prev;
+            if (newTail != nullptr) { // maybe line not needed?
+                newTail->next = nullptr;
+            }
+
+            // sets new head
+            snake.tail->prev = nullptr;
+            snake.tail->next = snake.head;
+            if (snake.head != nullptr) {
+                snake.head->prev = snake.tail;
+            }
+
+            // updates head and tail pointer 
+            snake.head = snake.tail;
+            snake.tail = newTail;
         }
 
         // copies the current list of coordinates of the snake onto arr
@@ -107,7 +118,6 @@ public:
     }
 
     void drawGrid(sf::RenderWindow& window) {
-
         // initalzing box size 
         sf::Vector2u size = window.getSize();
         unsigned int sideLen = size.x;
