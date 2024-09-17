@@ -5,11 +5,6 @@
 
 // TODO: 
 
-// snake eating apple
-
-// apple respawning in random location
-// then add checks so apple does not spawn in snake
-
 // then add functionality for snake length increasing for one each apple eaten
 
 // make the snake's head different colored
@@ -50,6 +45,7 @@ public:
     std::string arr[9][9];
     std::string direction; 
     std::pair <int, int> changeDir; 
+    std::pair<int, int> appleCoords; 
 
     Grid() {
         for (int i = 0; i < 9; i++) {
@@ -58,10 +54,39 @@ public:
             }
         }
 
-        arr[6][4] = "apple";
+        appleCoords.first = 6; 
+        appleCoords.second = 4; 
+        arr[appleCoords.first][appleCoords.second] = "apple";
 
         changeDir.first = 0;
         changeDir.second = 0; 
+    }
+
+    void respawnApple() {
+        srand((unsigned)time(NULL));
+        arr[appleCoords.first][appleCoords.second] = "empty";
+
+        while (true) {
+            bool appleIsFree = true; 
+            appleCoords.first = rand() % 9;
+            appleCoords.second = rand() % 9;
+
+            Node* cur = snake.head;
+            while (cur != nullptr) {
+                if (cur->position == appleCoords) {
+                    appleIsFree = false; 
+                    break;
+                }
+                cur = cur->next; 
+            }
+
+            if (appleIsFree) {
+                break;
+            }
+        }
+
+        arr[appleCoords.first][appleCoords.second] = "apple";
+
     }
 
     void updateSnake() {
@@ -77,29 +102,56 @@ public:
         // calculates snake's new head location
         int newHeadX = snake.head->position.first + changeDir.first;
         int newHeadY = snake.head->position.second + changeDir.second;
+        
+        std::pair<int, int> snakeHeadCoords(newHeadX, newHeadY);
 
+        if (snakeHeadCoords == appleCoords) {
+            if (snake.head == snake.tail) {
+                // sets 
+                Node* newTail = new Node(snake.head->position.first, snake.head->position.second);
+
+                snake.head->position = snakeHeadCoords; 
+
+                newTail->prev = snake.head; 
+                snake.head->next = newTail; 
+                snake.tail = newTail; 
+            } else {
+                // sets new tail
+                Node* newTail = new Node(snake.tail->position.first, snake.tail->position.second); 
+                newTail->prev = snake.tail->prev; 
+                newTail->next = nullptr; // prolly can use copy assignment operator here
+                newTail->prev->next = newTail; 
+
+                // sets new head 
+                snake.tail->position = snakeHeadCoords; 
+                snake.tail->prev = nullptr; 
+                snake.tail->next = snake.head; 
+                snake.head->prev = snake.tail;
+
+                // updates head and tail pointer
+                snake.head = snake.tail; 
+                snake.tail = newTail; 
+            }
+            respawnApple(); 
+        }
         // if single node
         if (snake.head == snake.tail) {
             snake.head->position.first = newHeadX; 
             snake.head->position.second = newHeadY; 
         } else { // if more than one node
-            // moves snake's tail in front of snake's head
-            snake.tail->position.first = newHeadX;
-            snake.tail->position.second = newHeadY;
+            // sets new head 
+            snake.tail->position = snakeHeadCoords;
+
 
             // sets new tail
             Node* newTail = snake.tail->prev;
-            if (newTail != nullptr) { // maybe line not needed?
-                newTail->next = nullptr;
-            }
+            newTail->next = nullptr;
 
             // sets new head
             snake.tail->prev = nullptr;
             snake.tail->next = snake.head;
-            if (snake.head != nullptr) {
-                snake.head->prev = snake.tail;
-            }
-
+            snake.head->prev = snake.tail;
+         
             // updates head and tail pointer 
             snake.head = snake.tail;
             snake.tail = newTail;
