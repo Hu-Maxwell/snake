@@ -95,16 +95,25 @@ public:
         Node* cur = snake.head->next; 
         while (cur != nullptr) {
             if (cur->position == snakeHeadPos) {
+
                 // says dead each time apple is eaten
-                // if apple eaten, then ignore lol 
-                std::cout << "dead"; 
+                if (snake.head == snake.tail) {
+                    if (snakeHeadPos != snake.tail->position) {
+                        std::cout << "dead";
+                    }
+                }
+                else {
+                    if (snakeHeadPos != snake.head->next->position) {
+                        std::cout << "dead";
+                    }
+                }
             }
             cur = cur->next; 
         }
 
     }
 
-+     void updateSnake() {
+     void updateSnake() {
         // clears all snake elements
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
@@ -270,9 +279,9 @@ int main() {
         }
 
         if (time.asSeconds() > .18f) {
-            clock.restart();
+            clock.restart(); 
+            grid.checkIfDead();
             grid.updateSnake(); 
-            grid.checkIfDead(); 
         }
 
         grid.drawGrid(window);
