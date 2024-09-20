@@ -4,14 +4,9 @@
 #include "snake.hpp"
 
 // TODO: 
-
-// then add functionality for snake length increasing for one each apple eaten
-
-// make the snake's head different colored
-
-// if snake's head = any snake part, it dies
-
+// fix snake eating apple dying glitch 
 // add start screen -> game -> freeze when die -> click -> start screen but different text   
+// make an animation where all the blocks in the snake turn into a different color when dying 
 
 class Node {
 public: 
@@ -88,12 +83,32 @@ public:
         arr[appleCoords.first][appleCoords.second] = "apple";
 
     }
+    void checkIfDead() {
+        // if snake is out of bounds
+        std::pair<int, int> snakeHeadPos = snake.head->position;
 
-    void updateSnake() {
+        if (snakeHeadPos.first < 0 || snakeHeadPos.second < 0 || snakeHeadPos.first > 9 || snakeHeadPos.second > 9) {
+            std::cout << "dead"; 
+        }
+
+        // if snake's head is in itself
+        Node* cur = snake.head->next; 
+        while (cur != nullptr) {
+            if (cur->position == snakeHeadPos) {
+                // says dead each time apple is eaten
+                // if apple eaten, then ignore lol 
+                std::cout << "dead"; 
+            }
+            cur = cur->next; 
+        }
+
+    }
+
++     void updateSnake() {
         // clears all snake elements
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
-                if (arr[j][i] == "snake") {
+                if (arr[j][i] == "snake" || arr[j][i] == "snakeHead") {
                     arr[j][i] = "empty";
                 }
             }
@@ -167,6 +182,8 @@ public:
 
             cur = cur->next;
         }
+
+        arr[snake.head->position.first][snake.head->position.second] = "snakeHead";
     }
 
     void drawGrid(sf::RenderWindow& window) {
@@ -187,6 +204,9 @@ public:
                 }
                 else if (arr[j][i] == "snake") {
                     square.setFillColor(sf::Color::Red);
+                }
+                else if (arr[j][i] == "snakeHead") {
+                    square.setFillColor(sf::Color::Green);
                 }
                 else if (arr[j][i] == "apple") {
                     square.setFillColor(sf::Color::Blue);
@@ -252,6 +272,7 @@ int main() {
         if (time.asSeconds() > .18f) {
             clock.restart();
             grid.updateSnake(); 
+            grid.checkIfDead(); 
         }
 
         grid.drawGrid(window);
