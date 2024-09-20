@@ -4,9 +4,9 @@
 #include "snake.hpp"
 
 // TODO: 
-// fix snake eating apple dying glitch 
 // add start screen -> game -> freeze when die -> click -> start screen but different text   
 // make an animation where all the blocks in the snake turn into a different color when dying 
+// don't allow snake to move in opp direction of current one
 
 class Node {
 public: 
@@ -39,8 +39,8 @@ public:
     SnakeList snake; 
     std::string arr[9][9];
     std::string direction; 
-    std::pair <int, int> changeDir; 
-    std::pair<int, int> appleCoords; 
+    std::pair<int, int> changeDir; 
+    std::pair<int, int> applePos; 
 
     Grid() {
         for (int i = 0; i < 9; i++) {
@@ -49,9 +49,9 @@ public:
             }
         }
 
-        appleCoords.first = 6; 
-        appleCoords.second = 4; 
-        arr[appleCoords.first][appleCoords.second] = "apple";
+        applePos.first = 6; 
+        applePos.second = 4; 
+        arr[applePos.first][applePos.second] = "apple";
 
         changeDir.first = 0;
         changeDir.second = 0; 
@@ -59,16 +59,16 @@ public:
 
     void respawnApple() {
         srand((unsigned)time(NULL));
-        arr[appleCoords.first][appleCoords.second] = "empty";
+        arr[applePos.first][applePos.second] = "empty";
 
         while (true) {
             bool appleIsFree = true; 
-            appleCoords.first = rand() % 9;
-            appleCoords.second = rand() % 9;
+            applePos.first = rand() % 9;
+            applePos.second = rand() % 9;
 
             Node* cur = snake.head;
             while (cur != nullptr) {
-                if (cur->position == appleCoords) {
+                if (cur->position == applePos) {
                     appleIsFree = false; 
                     break;
                 }
@@ -80,7 +80,7 @@ public:
             }
         }
 
-        arr[appleCoords.first][appleCoords.second] = "apple";
+        arr[applePos.first][applePos.second] = "apple";
 
     }
     void checkIfDead() {
@@ -129,7 +129,7 @@ public:
         
         std::pair<int, int> snakeHeadCoords(newHeadX, newHeadY);
 
-        if (snakeHeadCoords == appleCoords) {
+        if (snakeHeadCoords == applePos) {
             if (snake.head == snake.tail) {
                 // sets 
                 Node* newTail = new Node(snake.head->position.first, snake.head->position.second);
@@ -188,11 +188,12 @@ public:
             int y = cur->position.second;
 
             arr[x][y] = "snake";
+            arr[snake.head->position.first][snake.head->position.second] = "snakeHead";
 
             cur = cur->next;
         }
 
-        arr[snake.head->position.first][snake.head->position.second] = "snakeHead";
+      
     }
 
     void drawGrid(sf::RenderWindow& window) {
@@ -228,6 +229,8 @@ public:
 
     void moveSnake(sf::Keyboard::Key input) {
         Node* cur = snake.head; 
+
+        std::pair<int, int> oldDir = changeDir; 
         
         if (input == sf::Keyboard::W) {
             changeDir.first = 0;
@@ -244,6 +247,17 @@ public:
         else if (input == sf::Keyboard::D) {
             changeDir.first = 1;
             changeDir.second = 0;
+        }
+
+        if (changeDir.first != 0) {
+            if ((changeDir.first + oldDir.first) == 0) {
+                changeDir = oldDir;
+            }
+        } 
+        if (changeDir.second != 0) {
+            if ((changeDir.second + oldDir.second) == 0) {
+                changeDir = oldDir; 
+            }
         }
     }
 }; 
