@@ -262,6 +262,18 @@ public:
     }
 }; 
 
+
+void startScreen() { // take for input a pointer to a bool val, onStartScreen and onGameScreen
+    // don't need to clear window all the time
+    // draw text "click to start", with window draw
+    // always watch for 2 events, closing window and click to start
+}
+
+void gameScreen() {
+
+}
+
+
 int main() {
     sf::RenderWindow window(sf::VideoMode(900, 900), "snake");
 
@@ -270,6 +282,13 @@ int main() {
     sf::Keyboard::Key direction = sf::Keyboard::Unknown;
 
     while (window.isOpen()) {
+
+        // if onStartScreen == true 
+            // call start screen func
+        // if onGameScreen == true
+            // call gameScreen
+
+
         window.clear();
 
         sf::Time time = clock.getElapsedTime();
