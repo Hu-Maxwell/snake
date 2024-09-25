@@ -3,10 +3,7 @@
 
 #include "snake.hpp"
 
-// TODO: 
-// add start screen -> game -> freeze when die -> click -> start screen but different text   
-// make an animation where all the blocks in the snake turn into a different color when dying 
-// don't allow snake to move in opp direction of current one
+#define EXIT_FAILURE
 
 class Node {
 public: 
@@ -83,12 +80,14 @@ public:
         arr[applePos.first][applePos.second] = "apple";
 
     }
-    void checkIfDead() {
+
+    bool checkIfDead() {
         // if snake is out of bounds
         std::pair<int, int> snakeHeadPos = snake.head->position;
+        std::pair<int, int> nextHeadPos(snake.head->position.first + changeDir.first, snake.head->position.second + changeDir.second); 
 
-        if (snakeHeadPos.first < 0 || snakeHeadPos.second < 0 || snakeHeadPos.first > 9 || snakeHeadPos.second > 9) {
-            std::cout << "dead"; 
+        if (nextHeadPos.first < 0 || nextHeadPos.second < 0 || nextHeadPos.first > 8 || nextHeadPos.second > 8) {
+            return true; 
         }
 
         // if snake's head is in itself
@@ -99,12 +98,12 @@ public:
                 // says dead each time apple is eaten
                 if (snake.head == snake.tail) {
                     if (snakeHeadPos != snake.tail->position) {
-                        std::cout << "dead";
+                        return true; 
                     }
                 }
                 else {
                     if (snakeHeadPos != snake.head->next->position) {
-                        std::cout << "dead";
+                        return true; 
                     }
                 }
             }
@@ -263,31 +262,46 @@ public:
 }; 
 
 
-void startScreen() { // take for input a pointer to a bool val, onStartScreen and onGameScreen
-    // don't need to clear window all the time
-    // draw text "click to start", with window draw
-    // always watch for 2 events, closing window and click to start
+void startScreen(sf::RenderWindow& window, bool& isPlaying) { 
+    sf::Font font;
+    if (!font.loadFromFile("C:/Users/maxwe/source/repos/TicTacToe Redo/TicTacToe Redo/fonts/semibold.ttf")) {
+        std::cerr << "Failed to load font" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    sf::Text text("Press left click to play.", font);
+    text.setCharacterSize(24);
+
+    sf::FloatRect textRect = text.getLocalBounds();
+    text.setOrigin(textRect.width / 2.0f, textRect.height / 2.0f);
+    text.setPosition(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
+
+
+    while (window.isOpen()) {
+        window.clear();
+
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed)
+                window.close();
+
+            if (event.mouseButton.button == sf::Mouse::Left) {
+                isPlaying = true;
+                return; 
+            }
+        }
+
+        window.draw(text); 
+        window.display();
+    }
 }
 
-void gameScreen() {
-
-}
-
-
-int main() {
-    sf::RenderWindow window(sf::VideoMode(900, 900), "snake");
-
-    Grid grid; 
+void gameScreen(sf::RenderWindow& window, bool& isPlaying) {
+    Grid grid;
     sf::Clock clock;
     sf::Keyboard::Key direction = sf::Keyboard::Unknown;
 
     while (window.isOpen()) {
-
-        // if onStartScreen == true 
-            // call start screen func
-        // if onGameScreen == true
-            // call gameScreen
-
 
         window.clear();
 
@@ -312,12 +326,35 @@ int main() {
         }
 
         if (time.asSeconds() > .18f) {
-            clock.restart(); 
-            grid.checkIfDead();
-            grid.updateSnake(); 
+            clock.restart();
+            if (grid.checkIfDead()) {
+                isPlaying = false; 
+                return; 
+            }
+            grid.updateSnake();
         }
 
         grid.drawGrid(window);
         window.display();
+    }
+}
+
+
+int main() {
+    sf::RenderWindow window(sf::VideoMode(900, 900), "snake");
+
+    Grid grid; 
+    sf::Clock clock;
+    sf::Keyboard::Key direction = sf::Keyboard::Unknown;
+
+    bool isPlaying = false; 
+
+    while (window.isOpen()) {
+        if (isPlaying == false) {
+            startScreen(window, isPlaying); 
+        }
+        else {
+            gameScreen(window, isPlaying); 
+        }
     }
 }
