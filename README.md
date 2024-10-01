@@ -1,3 +1,1 @@
-Demo: 
-
-https://youtu.be/PvltiH-ZR6E 
+[![Demo Video](https://img.youtube.com/vi/PvItiH-ZR6E/maxresdefault.jpg)](https://youtu.be/PvItiH-ZR6E)
